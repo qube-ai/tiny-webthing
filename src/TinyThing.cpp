@@ -2,28 +2,28 @@
 
 
 TinyThing::TinyThing(const char *thingId_) {
-    this->thingId = thingId_;
-    this->next = nullptr;
-    this->firstProperty = nullptr;
+    thingId = thingId_;
+    nextThing = nullptr;
+    firstProperty = nullptr;
 }
 
-TinyProperty TinyThing::*findProperty(const char *id)
+TinyProperty* TinyThing::findProperty(const char *id)
 {
-    TinyProperty *property = this->firstProperty;
+    TinyProperty *property = firstProperty;
     while (property)
     {
         if (!strcmp(property->id.c_str(), id))
         {
             return property;
         }
-        property = (TinyProperty *)property->next;
+        property = (TinyProperty *)property->nextItem;
     }
     return nullptr;
 }
 
 void TinyThing::addProperty(TinyProperty *property)
 {
-    property->next = firstProperty;
+    property->nextItem = firstProperty;
     firstProperty = property;
 }
 
@@ -74,21 +74,21 @@ void TinyThing::setProperty(const char *id, const JsonVariant &newValue)
 
 void TinyThing::serialize(JsonObject descr, String tunnelUrl)
 {
-    descr["id"] = this->thingId;
-    descr["base"] = tunnelUrl + "/things/" + this->thingId;
+    descr["id"] = thingId;
+    descr["base"] = tunnelUrl + "/things/" + thingId;
     // Create wss url from http url
     tunnelUrl.replace("https", "wss");
-    descr["wsUrl"] = tunnelUrl + "/things/" + this->thingId + "/ws";
+    descr["wsUrl"] = tunnelUrl + "/things/" + thingId + "/ws";
 
-    TinyProperty *property = this->firstProperty;
+    TinyProperty *property = firstProperty;
     if (property != nullptr)
     {
         JsonObject properties = descr.createNestedObject("properties");
         while (property != nullptr)
         {
             JsonObject obj = properties.createNestedObject(property->id);
-            property->serialize(obj, this->thingId, "properties");
-            property = (TinyProperty *)property->next;
+            property->serialize(obj, thingId, "properties");
+            property = (TinyProperty *)property->nextItem;
         }
     }
 }

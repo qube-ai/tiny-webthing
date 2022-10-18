@@ -1,28 +1,29 @@
 #include "TinyProperty.h"
 
-TinyItem::TinyItem(const char *id_, TinyDataType type_, const char *contextType_) {
-        this->id = id_;
-        this->type = type_;
-        this->contextType = contextType_;
-        this->value = {false};
-        this->hasChanged = false;
-    }
+TinyItem::TinyItem(const char *id_, TinyDataType type_, const char *contextType_)
+{
+    id = id_;
+    type = type_;
+    contextType = contextType_;
+    value = {false};
+    hasChanged = false;
+}
 
 void TinyItem::setValue(TinyDataValue value)
 {
-    this->value = value;
-    this->hasChanged = true;
+    value = value;
+    hasChanged = true;
 }
 
 TinyDataValue TinyItem::getValue()
 {
-    return this->value;
+    return value;
 }
 
-TinyDataValue TinyItem::*getChangedValueOrNull()
+TinyDataValue* TinyItem::getChangedValueOrNull()
 {
-    TinyDataValue *result = this->hasChanged ? &this->value : nullptr;
-    this->hasChanged = false;
+    TinyDataValue *result =  hasChanged ? &value : nullptr;
+    hasChanged = false;
     return result;
 }
 
@@ -63,27 +64,25 @@ void TinyItem::serialize(JsonObject obj, String thingId, String resourceType)
 
 void TinyItem::serializeValue(JsonObject prop)
 {
-    switch (this->type)
+    switch (type)
     {
     case BOOLEAN:
-        prop[this->id] = this->getValue().boolean;
+        prop[id] = TinyItem::getValue().boolean;
         break;
 
     case NUMBER:
-        prop[this->id] = this->getValue().number;
+        prop[id] = TinyItem::getValue().number;
         break;
 
     case INTEGER:
-        prop[this->id] = this->getValue().integer;
+        prop[id] = TinyItem::getValue().integer;
         break;
 
     case STRING:
-        prop[this->id] = this->getValue().string->c_str();
+        prop[id] = TinyItem::getValue().string->c_str();
         break;
     }
 }
-
-
 
 void TinyProperty::serialize(JsonObject obj, String thingId, String resourceType)
 {

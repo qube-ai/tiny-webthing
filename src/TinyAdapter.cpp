@@ -2,9 +2,9 @@
 
 
 TinyAdapter::TinyAdapter(const char *_tunnelUrl) {
-    this->tunnelUrl = _tunnelUrl;
-    this->firstThing = nullptr;
-    this->lastThing = nullptr;
+    tunnelUrl = _tunnelUrl;
+    firstThing = nullptr;
+    lastThing = nullptr;
 }
 
 void TinyAdapter::sendMessage(String &msg)
@@ -101,21 +101,21 @@ void TinyAdapter::onWebSocketEvent(WStype_t type, uint8_t *payload, size_t lengt
     }
 }
 
-TinyThing TinyAdapter::*findThingById(String id)
+TinyThing* TinyAdapter::findThingById(String id)
 {
-    TinyThing *thing = this->firstThing;
+    TinyThing *thing = firstThing;
     while (thing != nullptr)
     {
         if (thing->thingId == id)
         {
             return thing;
         }
-        thing = thing->next;
+        thing = thing->nextThing;
     }
     return nullptr;
 }
 
-TinyProperty TinyAdapter::*findPropertyById(TinyThing *thing, String id)
+TinyProperty* TinyAdapter::findPropertyById(TinyThing *thing, String id)
 {
     TinyProperty *property = thing->firstProperty;
     while (property != nullptr)
@@ -124,7 +124,7 @@ TinyProperty TinyAdapter::*findPropertyById(TinyThing *thing, String id)
         {
             return property;
         }
-        property = (TinyProperty *)property->next;
+        property = (TinyProperty *)property->nextItem;
     }
     return nullptr;
 }
@@ -150,26 +150,26 @@ void TinyAdapter::update()
     TA_LOG("[TA.update] updating connection loop.... \n");
     webSocket.loop();
     TA_LOG("[TA.update] connection loop updated \n");
-    TinyThing *device = this->firstThing;
+    TinyThing *device = firstThing;
     while (device != nullptr)
     {
         sendChangedProperties(device);
-        device = device->next;
+        device = device->nextThing;
     }
     TA_LOG("[TA:update] updateThings() finished \n");
 }
 
 void TinyAdapter::addThing(TinyThing *thing)
 {
-    if (this->firstThing == nullptr)
+    if (firstThing == nullptr)
     {
-        this->firstThing = thing;
-        this->lastThing = thing;
+        firstThing = thing;
+        lastThing = thing;
     }
     else
     {
-        this->lastThing->next = thing;
-        this->lastThing = thing;
+        lastThing->nextThing = thing;
+        lastThing = thing;
     }
 }
 
@@ -188,7 +188,7 @@ void TinyAdapter::sendChangedProperties(TinyThing *thing)
             dataToSend = true;
             item->serializeValue(prop);
         }
-        item = item->next;
+        item = item->nextItem;
     }
     if (dataToSend)
     {
@@ -203,13 +203,13 @@ void TinyAdapter::getThingDescription()
 {
     DynamicJsonDocument buf(LARGE_JSON_OBJECT);
     JsonArray things = buf.to<JsonArray>();
-    TinyThing *thing = this->firstThing;
+    TinyThing *thing = firstThing;
     while (thing != nullptr)
     {
         JsonObject descr = things.createNestedObject();
         thing->serialize(descr, tunnelUrl);
         descr["href"] = "/things/" + thing->thingId;
-        thing = thing->next;
+        thing = thing->nextThing;
     }
     DynamicJsonDocument doc(LARGE_JSON_OBJECT);
     JsonObject doc2 = doc.to<JsonObject>();
@@ -233,7 +233,7 @@ void TinyAdapter::getProperties(String thingId)
     while (item != nullptr)
     {
         item->serializeValue(prop);
-        item = item->next;
+        item = item->nextItem;
     }
     DynamicJsonDocument finalDoc(SMALL_JSON_OBJECT);
     JsonObject finalProp = finalDoc.to<JsonObject>();
@@ -247,7 +247,7 @@ void TinyAdapter::getProperties(String thingId)
 
 void TinyAdapter::setProperty(String thingId, String propertyId, String value)
 {
-    TinyThing *thing = this->findThingById(thingId);
+    TinyThing *thing = findThingById(thingId);
     if (thing == nullptr)
     {
         return;

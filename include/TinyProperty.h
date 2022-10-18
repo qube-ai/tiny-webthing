@@ -38,7 +38,7 @@ public:
     String id;
     TinyDataType type;
     String contextType;
-    TinyItem *next = nullptr;
+    TinyItem *nextItem = nullptr;
     String unit = "";
     TinyItem(const char *id_, TinyDataType type_, const char *contextType_);
 

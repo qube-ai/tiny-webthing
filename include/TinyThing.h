@@ -12,11 +12,10 @@ class TinyThing
 {
 public:
     String thingId;
-    TinyThing *next = nullptr;
+    TinyThing *nextThing = nullptr;
     TinyProperty *firstProperty = nullptr;
 
-    TinyThing(const char *thingId_)
-        : thingId(thingId_) {}
+    TinyThing(const char *thingId_);
 
     /*
      * @brief Find a property with the given id
