@@ -292,7 +292,8 @@ public:
      */
     void getThingDescription()
     {
-        StaticJsonDocument<LARGE_JSON_DOCUMENT_SIZE> buf;
+        // StaticJsonDocument<LARGE_JSON_DOCUMENT_SIZE> buf;
+        DynamicJsonDocument buf(LARGE_JSON_DOCUMENT_SIZE);
         JsonArray things = buf.to<JsonArray>();
         ThingDevice *device = this->firstDevice;
         while (device != nullptr)
@@ -302,7 +303,8 @@ public:
             descr["href"] = "/things/" + device->id;
             device = device->next;
         }
-        StaticJsonDocument<LARGE_JSON_DOCUMENT_SIZE> doc;
+        // StaticJsonDocument<LARGE_JSON_DOCUMENT_SIZE> doc;
+        DynamicJsonDocument doc(LARGE_JSON_DOCUMENT_SIZE);
         JsonObject doc2 = doc.to<JsonObject>();
         doc2["messageType"] = "descriptionOfThings";
         doc2["things"] = things;
@@ -333,7 +335,7 @@ public:
             item->serializeValue(prop);
             item = item->next;
         }
-        StaticJsonDocument<SMALL_JSON_DOCUMENT_SIZE> doc2;
+        StaticJsonDocument<SMALL_JSON_DOCUMENT_SIZE> finalDoc;
         JsonObject finalProp = finalDoc.to<JsonObject>();
         finalDoc["messageType"] = "getProperty";
         finalDoc["thingId"] = thingId;
