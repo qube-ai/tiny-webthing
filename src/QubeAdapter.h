@@ -62,7 +62,7 @@ public:
         {
             QA_LOG("[QA:messageHandler] Received a 'getProperty' message\n");
             String thingId = root["thingId"];
-            handleThingPropertiesGet(thingId);
+            getProperties(thingId);
         }
 
         else if (root["messageType"] == "setProperty")
@@ -71,39 +71,19 @@ public:
             String propertyId = root["data"]["propertyId"];
             QA_LOG("[QA:messageHandler] Received a 'setProperty' message\n");
             String data = root["data"];
-            handleThingPropertyPut(thingId, propertyId, data);
-        }
-
-        else if (root["messageType"] == "getThingDescription")
-        {
-            QA_LOG("[QA:messageHandler] Received a 'getThingDescription' message\n");
-            String thingId = root["thingId"];
-            handleThing(thingId);
+            setProperty(thingId, propertyId, data);
         }
 
         else if (root["messageType"] == "getAllThings")
         {
             QA_LOG("[QA:messageHandler] Received a 'getAllThings' message\n");
-            handleThings();
+            getThingDescription();
         }
 
         else
         {
             QA_LOG("[QA:messageHandler] Unknown message type received. Payload: %s\n", payload.c_str());
         }
-    }
-
-    void payloadHandler(uint8_t *payload, size_t length)
-    {
-        QA_LOG("[QA:payloadHandler] New message received!\n");
-        char msgch[length];
-        for (unsigned int i = 0; i < length; i++)
-        {
-            msgch[i] = ((char)payload[i]);
-        }
-        msgch[length] = '\0';
-        String msg = msgch;
-        messageHandler(msg);
     }
 
     /*
@@ -123,8 +103,18 @@ public:
             break;
 
         case WStype_TEXT:
-            payloadHandler(payload, length);
+        {
+            QA_LOG("[QA:payloadHandler] New message received!\n");
+            char msgch[length];
+            for (unsigned int i = 0; i < length; i++)
+            {
+                msgch[i] = ((char)payload[i]);
+            }
+            msgch[length] = '\0';
+            String msg = msgch;
+            messageHandler(msg);
             break;
+        }
 
         case WStype_ERROR:
             QA_LOG("[QA:webSocketEvent] Error!\n");
@@ -265,8 +255,8 @@ public:
     }
 
     /*
-     * Send a property value to the server.
-     * @param TinyProperty property
+     * Send all properties value to the server that have been changes.
+     * @param ThingDevice *device
      */
     void sendChangedProperties(ThingDevice *device)
     {
@@ -295,7 +285,11 @@ public:
         }
     }
 
-    void handleThings()
+    /*
+     * When server asks for thing description this method is called.
+     * Generates a thing description and sends it to the server.
+     */
+    void getThingDescription()
     {
         DynamicJsonDocument buf(LARGE_JSON_DOCUMENT_SIZE);
         JsonArray things = buf.to<JsonArray>();
@@ -317,54 +311,12 @@ public:
         QA_LOG("[QA:handleThings] Thing description of all devices sent!\n");
     }
 
-    void handleThing(String thingId)
-    {
-
-        ThingDevice *device = findDeviceById(thingId);
-        if (device == nullptr)
-        {
-            String msg = "{\"messageType\":\"error\",\"errorCode\":\"404\",\"errorMessage\":\"Thing not found\", \"thingId\": \"" + thingId + "\"}";
-            sendMessage(msg);
-        }
-        DynamicJsonDocument buf(LARGE_JSON_DOCUMENT_SIZE);
-        JsonObject descr = buf.to<JsonObject>();
-        device->serialize(descr);
-        String jsonStr;
-        serializeJson(descr, jsonStr);
-        sendMessage(jsonStr);
-
-        QA_LOG("[QA:handleThing] Thing description sent!\n");
-    }
-
-    void handleThingPropertyGet(String thingId, String propertyId)
-    {
-
-        ThingDevice *device = findDeviceById(thingId);
-        if (device == nullptr)
-        {
-            String msg = "{\"messageType\":\"error\",\"errorCode\":\"404\",\"errorMessage\":\"Thing not found\", \"thingId\": \"" + thingId + "\"}";
-            sendMessage(msg);
-        }
-        ThingItem *item = findPropertyById(device, propertyId);
-        if (item == nullptr)
-        {
-            String msg = "{\"messageType\":\"error\",\"errorCode\":\"404\",\"errorMessage\":\"Property not found\", \"thingId\": \"" + thingId + "\", \"propertyId\": \"" + propertyId + "\"}";
-            sendMessage(msg);
-        }
-        DynamicJsonDocument doc(SMALL_JSON_DOCUMENT_SIZE);
-        JsonObject prop = doc.to<JsonObject>();
-        item->serializeValue(prop);
-        DynamicJsonDocument finalDoc(SMALL_JSON_DOCUMENT_SIZE);
-        JsonObject finalProp = finalDoc.to<JsonObject>();
-        finalDoc["messageType"] = "getProperty";
-        finalDoc["thingId"] = thingId;
-        finalDoc["properties"] = prop;
-        String jsonStr;
-        serializeJson(finalProp, jsonStr);
-        sendMessage(jsonStr);
-    }
-
-    void handleThingPropertiesGet(String thingId)
+    /*
+     * When server asks for property value this method is called.
+     * Serializes all properties and send it to the server.
+     * @example { "temperature": 23, "humidity": 45 }
+     */
+    void getProperties(String thingId)
     {
         ThingItem *rootItem = findDeviceById(thingId)->firstProperty;
         if (rootItem == nullptr)
@@ -393,7 +345,13 @@ public:
         QA_LOG("[QA:handleThingPropertiesGet] Property data was sent back.\n");
     }
 
-    void handleThingPropertyPut(String thingId, String propertyId, String newPropertyData)
+    /*
+     * Change a property value.
+     * @param {String} thingId
+     * @param {String} propertyId
+     * @param {String} value
+     */
+    void setProperty(String thingId, String propertyId, String newPropertyData)
     {
 
         ThingDevice *device = findDeviceById(thingId);
