@@ -7,9 +7,10 @@
 
 - [ ] Remove dependency on ArduinoJson
 - [ ] Reduce size of TD 
-- [ ] Use StaticJsonDocument instead of DynamicJsonDocument
+- [X] Use StaticJsonDocument instead of DynamicJsonDocument
 - [ ] Fixed size of messages received from server
 - [ ] Add support for multiple things
+- [ ] Change message schema in tunnel server and client
  
 
 ## Example

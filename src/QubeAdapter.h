@@ -6,8 +6,11 @@
 
 #define QA_LOG(...) Serial.printf(__VA_ARGS__)
 
-#define LARGE_JSON_DOCUMENT_SIZE 4096
-#define SMALL_JSON_DOCUMENT_SIZE 1024
+#define ARDUINOJSON_USE_LONG_LONG 1
+
+#define LARGE_JSON_DOCUMENT_SIZE 2048
+#define SMALL_JSON_DOCUMENT_SIZE 512
+#define TINY_JSON_DOCUMENT_SIZE 256
 
 class QubeAdapter
 {
@@ -46,8 +49,7 @@ public:
      */
     void messageHandler(String payload)
     {
-
-        DynamicJsonDocument doc(LARGE_JSON_DOCUMENT_SIZE);
+        StaticJsonDocument<TINY_JSON_DOCUMENT_SIZE> doc;
         DeserializationError error = deserializeJson(doc, payload);
         if (error)
         {
@@ -260,8 +262,7 @@ public:
      */
     void sendChangedProperties(ThingDevice *device)
     {
-        // Prepare one buffer per device
-        DynamicJsonDocument message(LARGE_JSON_DOCUMENT_SIZE);
+        StaticJsonDocument<TINY_JSON_DOCUMENT_SIZE> message;
         message["messageType"] = "propertyStatus";
         JsonObject prop = message.createNestedObject("data");
         bool dataToSend = false;
@@ -291,7 +292,7 @@ public:
      */
     void getThingDescription()
     {
-        DynamicJsonDocument buf(LARGE_JSON_DOCUMENT_SIZE);
+        StaticJsonDocument<LARGE_JSON_DOCUMENT_SIZE> buf;
         JsonArray things = buf.to<JsonArray>();
         ThingDevice *device = this->firstDevice;
         while (device != nullptr)
@@ -308,7 +309,6 @@ public:
         String jsonStr;
         serializeJson(doc2, jsonStr);
         sendMessage(jsonStr);
-        QA_LOG("[QA:handleThings] Thing description of all devices sent!\n");
     }
 
     /*
@@ -325,8 +325,7 @@ public:
             sendMessage(msg);
         }
 
-        // TODO Instead of using two DyanmicJsonDocument, use one
-        DynamicJsonDocument doc(LARGE_JSON_DOCUMENT_SIZE);
+        StaticJsonDocument<SMALL_JSON_DOCUMENT_SIZE> doc;
         JsonObject prop = doc.to<JsonObject>();
         ThingItem *item = rootItem;
         while (item != nullptr)
@@ -334,7 +333,7 @@ public:
             item->serializeValue(prop);
             item = item->next;
         }
-        DynamicJsonDocument finalDoc(LARGE_JSON_DOCUMENT_SIZE);
+        StaticJsonDocument<SMALL_JSON_DOCUMENT_SIZE> doc2;
         JsonObject finalProp = finalDoc.to<JsonObject>();
         finalDoc["messageType"] = "getProperty";
         finalDoc["thingId"] = thingId;
@@ -364,7 +363,8 @@ public:
         {
             return;
         }
-        DynamicJsonDocument newBuffer(LARGE_JSON_DOCUMENT_SIZE);
+
+        StaticJsonDocument<SMALL_JSON_DOCUMENT_SIZE> newBuffer;
         auto error = deserializeJson(newBuffer, newPropertyData);
 
         if (error)
