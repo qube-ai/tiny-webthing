@@ -17,6 +17,6 @@
   "platforms": "espressif8266,espressif32,atmelavr,atmelsam",
   "dependencies": {
     "bblanchon/ArduinoJson": "^6.17.0",
-    "Links2004/arduinoWebSockets": "^2.3.6"
+    "Links2004/WebSockets": "^2.3.6"
   }
 }
