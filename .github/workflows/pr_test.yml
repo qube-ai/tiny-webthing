@@ -1,4 +1,4 @@
-name: Test Library
+name: Release Build
 
 on:
   pull_request:
@@ -12,8 +12,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up pio core
-        uses: platformio/platformio-core-action@v2
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v2
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
 
       - name: Get inside the example folder
         run: cd examples/simple
@@ -38,3 +57,4 @@ jobs:
           release_name: Release ${{ steps.lib_version.outputs.version }}
           draft: false
           prerelease: false
+          artifacts: examples/simple/.pio/build/release/*.bin, examples/simple/.pio/build/release/*.elf, examples/simple/.pio/build/release/*.hex
