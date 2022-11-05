@@ -1,0 +1,55 @@
+name: Release Build
+
+on:
+  pull_request:
+    branches:
+      - main
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v2
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+
+      - name: Install dependencies
+        working-directory: ./examples/simple
+        run: pio pkg install
+
+      - name: Build
+        working-directory: ./examples/simple
+        run: pio run
+
+      - name: create env variable for lib version from library.json
+        id: lib_version
+        run: echo "::set-output name=version::$(cat library.json | grep "version" | cut -d '"' -f 4)" 
+      
+      - name: Create Github Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          tag: "v${{ steps.lib_version.outputs.version }}"
+          token: ${{ secrets.TOKEN_GITHUB }}
+          name: "v${{ steps.lib_version.outputs.version }}"
+          body: "This is a production build for the v${{ steps.lib_version.outputs.version }}. Changelog will be added in future versions."
