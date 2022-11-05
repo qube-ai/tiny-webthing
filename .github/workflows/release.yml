@@ -6,8 +6,7 @@ on:
       - main
   
 jobs:
-
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -34,27 +33,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
 
-      - name: Get inside the example folder
-        run: cd examples/simple
-
       - name: Install dependencies
-        run: pio lib install
+        working-directory: ./examples/simple
+        run: pio pkg install
 
       - name: Build
+        working-directory: ./examples/simple
         run: pio run
 
       - name: create env variable for lib version from library.json
         id: lib_version
         run: echo "::set-output name=version::$(cat library.json | grep "version" | cut -d '"' -f 4)" 
       
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Github Release
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.lib_version.outputs.version }}
-          release_name: Release ${{ steps.lib_version.outputs.version }}
-          draft: false
-          prerelease: false
-          artifacts: examples/simple/.pio/build/release/*.bin, examples/simple/.pio/build/release/*.elf, examples/simple/.pio/build/release/*.hex
+          allowUpdates: true
+          tag: "v${{ steps.lib_version.outputs.version }}"
+          token: ${{ secrets.TOKEN_GITHUB }}
+          name: "v${{ steps.lib_version.outputs.version }}"
+          body: "This is a production build for the v${{ steps.lib_version.outputs.version }}. Changelog will be added in future versions."
