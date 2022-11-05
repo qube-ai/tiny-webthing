@@ -1,0 +1,40 @@
+name: Test Library
+
+on:
+  pull_request:
+    branches:
+      - main
+  
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up pio core
+        uses: platformio/platformio-core-action@v2
+
+      - name: Get inside the example folder
+        run: cd examples/simple
+
+      - name: Install dependencies
+        run: pio lib install
+
+      - name: Build
+        run: pio run
+
+      - name: create env variable for lib version from library.json
+        id: lib_version
+        run: echo "::set-output name=version::$(cat library.json | grep "version" | cut -d '"' -f 4)" 
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.lib_version.outputs.version }}
+          release_name: Release ${{ steps.lib_version.outputs.version }}
+          draft: false
+          prerelease: false
