@@ -118,7 +118,7 @@ public:
 
         if (atType != nullptr)
         {
-            obj["@contextType"] = atType;
+            obj["@type"] = atType;
         }
     }
 
