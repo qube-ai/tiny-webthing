@@ -1,7 +1,7 @@
-name: Release Build
+name: PR Test (check if code compiles)
 
 on:
-  push:
+  pull_request:
     branches:
       - main
   
