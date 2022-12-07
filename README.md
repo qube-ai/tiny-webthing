@@ -1,6 +1,6 @@
 # tiny-webthing
 
-A tiny Web Thing implementation for Arduino. This is library does not support events and actions. The library uses websocket for communication. So you have to create a websocket server to be able to communicate.
+A simple library for the ESP8266 that implements Mozilla's proposed Web of Things API. This library is a port of [webthing-arduino](https://github.com/WebThingsIO/webthing-arduino) but this library is much smaller and simpler. Instead of creating a server on the ESP8266 and communicate locally, this library uses websocket to tunnel the ESP8266/thing and communicate with it over the internet. So to use this library you need to write a tunnel server that will communicate with the ESP8266/thing over websocket with following schema as mentioned below.
 
 
 ## Installation (Platformio)
@@ -114,23 +114,6 @@ response :
 }
 ```
 
-## Architecture
-
-![Architecture](https://img.shields.io/badge/Architecture-Tiny%20Things-blue.svg)
-
-![Architecture](/docs/tiny-webthing-arch.png)
-
-## TODO
-
-- [x] Use StaticJsonDocument instead of DynamicJsonDocument
-- [ ] Remove dependency on ArduinoJson
-- [ ] Reduce size of TD
-- [ ] Fixed size of messages received from server
-- [ ] Change message schema in tunnel server and client
-
-
-
-
 ## Example
 
 ```C++
@@ -146,7 +129,10 @@ const int ledPin = LED_BUILTIN;
 TinyAdapter *adapter;
 
 void onOffChanged(ThingPropertyValue newValue);
-ThingDevice led("tiny-thing-02");
+
+// Define the types of the thing. This will be `@type` in the thing description.
+const char *ledTypes[] = {"OnOffSwitch", "LightBrightnesControl", nullptr};
+ThingDevice led("tiny-thing-02", ledTypes);
 ThingProperty ledOn("on", BOOLEAN, "OnOffProperty", onOffChanged);
 ThingProperty ledBrightness("brightness", NUMBER, "BrightnessProperty", nullptr);
 
@@ -201,3 +187,47 @@ void loop()
 
 
 ```
+
+
+## Configuration
+If you have a complex device with large thing descriptions, you may need to increase the size of the JSON buffers. The buffer sizes are configurable as such:
+
+```cpp
+// By default, buffers are 256 for tiny, 512 bytes for small documents, 2048 for larger ones
+// You can change these by defining them before including the library
+#define LARGE_JSON_DOCUMENT_SIZE 2048
+#define SMALL_JSON_DOCUMENT_SIZE 512
+#define TINY_JSON_DOCUMENT_SIZE 256
+
+#include <Thing.h>
+#include <TinyAdapter.h>
+
+```
+
+- Enable debug mode by defining `TA_LOGGING` before including the library.
+
+```cpp
+#define TA_LOGGING 1
+
+#include <Thing.h>
+#include <TinyAdapter.h>
+
+```
+
+
+## Architecture
+
+![Architecture](https://img.shields.io/badge/Architecture-Tiny%20Things-blue.svg)
+
+![Architecture](/docs/tiny-webthing-arch.png)
+
+## TODO
+
+- [x] Use StaticJsonDocument instead of DynamicJsonDocument
+- [ ] Remove dependency on ArduinoJson
+- [ ] Reduce size of TD
+- [ ] Fixed size of messages received from server
+- [ ] Change message schema in tunnel server and client
+- [ ] Add support for actions, events
+
+

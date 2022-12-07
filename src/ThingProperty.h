@@ -43,7 +43,7 @@ public:
 
     /*
      * @brief Set the value of the property
-     * @param TinyDataValue value
+     * @param TinyDataValue value : {boolean, number, integer, string}
      */
     void setValue(ThingDataValue newValue)
     {
@@ -53,7 +53,7 @@ public:
 
     /*
      * @brief Set the value of the property
-     * @param const char *s
+     * @param const char *s : string value
      */
     void setValue(const char *s)
     {
@@ -81,8 +81,7 @@ public:
         /*
      * @brief Serialize the property to JSON
      * @param JsonObject &json
-     * @param String thingId
-     * @param String resourceType
+     * @param String deviceId
      * @example
      * {
      *    "id": "temperature",
@@ -173,9 +172,8 @@ public:
 
     /*
      * @brief Serialize the property to JSON
-     * @param JsonObject obj
-     * @param String thingId
-     * @param String resourceType
+     * @param JsonObject obj : JSON object to serialize to
+     * @param String deviceId : ID of the thing
      */
     void serialize(JsonObject obj, String deviceId)
     {
@@ -199,7 +197,7 @@ public:
     /*
      * @brief If the property has changed, call the callback function
      * if it exists.
-     * @param TinyDataValue value
+     * @param TinyDataValue value : {boolean, number, integer, string}
      */
     void changed(ThingPropertyValue newValue)
     {

@@ -2,7 +2,7 @@
   "name": "tiny-webthing",
   "description": "A library for creating Tiny Web Things. This library does not support actions and events.",
   "keywords": "Communication",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "authors": {
     "name": "Hrithik",
     "email": "hrithiky328@gmail.com",

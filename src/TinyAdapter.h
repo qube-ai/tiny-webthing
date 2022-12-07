@@ -4,13 +4,27 @@
 #include "Thing.h"
 #include <WebSocketsClient.h>
 
-#define QA_LOG(...) Serial.printf(__VA_ARGS__)
+// check if logging is enabled
+#ifndef TA_LOGGING
+#define TA_LOG(...) (void)0
+#else
+#define TA_LOG(...) Serial.printf(__VA_ARGS__)
+#endif
 
 #define ARDUINOJSON_USE_LONG_LONG 1
 
+#ifndef LARGE_JSON_DOCUMENT_SIZE
 #define LARGE_JSON_DOCUMENT_SIZE 2048
+#endif
+
+#ifndef SMALL_JSON_DOCUMENT_SIZE
 #define SMALL_JSON_DOCUMENT_SIZE 512
+#endif
+
+#ifndef TINY_JSON_DOCUMENT_SIZE
 #define TINY_JSON_DOCUMENT_SIZE 256
+#endif
+
 
 class TinyAdapter
 {
@@ -53,7 +67,7 @@ public:
         DeserializationError error = deserializeJson(doc, payload);
         if (error)
         {
-            QA_LOG("[QA:messageHandler] deserializeJson() failed: %s\n", error.c_str());
+            TA_LOG("[TA:messageHandler] deserializeJson() failed: %s\n", error.c_str());
             String msg = "{\"messageType\":\"error\", \"errorMessage\":\"deserializeJson() failed \"}";
             sendMessage(msg);
         }
@@ -62,14 +76,14 @@ public:
 
         if (root["messageType"] == "getProperty")
         {
-            QA_LOG("[QA:messageHandler] Received a 'getProperty' message\n");
+            TA_LOG("[TA:messageHandler] Received a 'getProperty' message\n");
             String thingId = root["thingId"];
             getProperties(thingId);
         }
 
         else if (root["messageType"] == "setProperty")
         {
-            QA_LOG("[QA:messageHandler] Received a 'setProperty' message\n");
+            TA_LOG("[TA:messageHandler] Received a 'setProperty' message\n");
             String thingId = root["thingId"];
             String propertyId = root["data"]["propertyId"];
             String data = root["data"];
@@ -78,13 +92,13 @@ public:
 
         else if (root["messageType"] == "getAllThings")
         {
-            QA_LOG("[QA:messageHandler] Received a 'getAllThings' message\n");
+            TA_LOG("[TA:messageHandler] Received a 'getAllThings' message\n");
             getThingDescription();
         }
 
         else
         {
-            QA_LOG("[QA:messageHandler] Unknown message type received. Payload: %s\n", payload.c_str());
+            TA_LOG("[TA:messageHandler] Unknown message type received. Payload: %s\n", payload.c_str());
         }
     }
 
@@ -96,17 +110,17 @@ public:
         switch (type)
         {
         case WStype_DISCONNECTED:
-            QA_LOG("[QA:webSocketEvent] Disconnect!\n");
+            TA_LOG("[TA:webSocketEvent] Disconnect!\n");
             break;
 
         case WStype_CONNECTED:
-            QA_LOG("[QA:webSocketEvent] Connected to tunnel server!\n");
+            TA_LOG("[TA:webSocketEvent] Connected to tunnel server!\n");
             webSocket.sendTXT("{\"messageType\":\"StartWs\"}");
             break;
 
         case WStype_TEXT:
         {
-            QA_LOG("[QA:payloadHandler] New message received!\n");
+            TA_LOG("[TA:payloadHandler] New message received!\n");
             char msgch[length];
             for (unsigned int i = 0; i < length; i++)
             {
@@ -119,31 +133,31 @@ public:
         }
 
         case WStype_ERROR:
-            QA_LOG("[QA:webSocketEvent] Error!\n");
+            TA_LOG("[TA:webSocketEvent] Error!\n");
             break;
 
         case WStype_FRAGMENT_TEXT_START:
-            QA_LOG("[QA:webSocketEvent] Fragment Text Start!\n");
+            TA_LOG("[TA:webSocketEvent] Fragment Text Start!\n");
             break;
 
         case WStype_FRAGMENT_BIN_START:
-            QA_LOG("[QA:webSocketEvent] Fragment Bin Start!\n");
+            TA_LOG("[TA:webSocketEvent] Fragment Bin Start!\n");
             break;
 
         case WStype_FRAGMENT:
-            QA_LOG("[QA:webSocketEvent] Fragment!\n");
+            TA_LOG("[TA:webSocketEvent] Fragment!\n");
             break;
 
         case WStype_FRAGMENT_FIN:
-            QA_LOG("[QA:webSocketEvent] Fragment Fin!\n");
+            TA_LOG("[TA:webSocketEvent] Fragment Fin!\n");
             break;
 
         case WStype_PING:
-            QA_LOG("[QA:webSocketEvent] Ping!\n");
+            TA_LOG("[TA:webSocketEvent] Ping!\n");
             break;
 
         case WStype_PONG:
-            QA_LOG("[QA:webSocketEvent] Pong!\n");
+            TA_LOG("[TA:webSocketEvent] Pong!\n");
             break;
         }
     }
@@ -337,7 +351,7 @@ public:
         String jsonStr;
         serializeJson(finalProp, jsonStr);
         sendMessage(jsonStr);
-        QA_LOG("[QA:getProperties] Property data was sent back.\n");
+        TA_LOG("[TA:getProperties] Property data was sent back.\n");
     }
 
     /*
@@ -353,13 +367,13 @@ public:
         ThingDevice *device = findDeviceById(thingId);
         if (device == nullptr)
         {
-            QA_LOG("[QA:setProperty] Thing not found. %s \n", thingId.c_str());
+            TA_LOG("[TA:setProperty] Thing not found. %s \n", thingId.c_str());
             return;
         }
         ThingProperty *property = findPropertyById(device, propertyId);
         if (property == nullptr)
         {   
-            QA_LOG("[QA:setProperty] Property not found. %s \n", propertyId.c_str());
+            TA_LOG("[TA:setProperty] Property not found. %s \n", propertyId.c_str());
             return;
         }
 
@@ -368,15 +382,15 @@ public:
 
         if (error)
         {
-            QA_LOG("[QA:setProperty] Parsing json error. %s \n", error.c_str());
+            TA_LOG("[TA:setProperty] Parsing json error. %s \n", error.c_str());
             return;
         }
         
-        QA_LOG("[QA:setProperty] Property data was received. %s \n", newPropertyData.c_str());
+        TA_LOG("[TA:setProperty] Property data was received. %s \n", newPropertyData.c_str());
         JsonObject newProp = newBuffer.as<JsonObject>();
         device->setProperty(property->id.c_str(), newProp["value"]);
         // Don't send the value back to the server
         // The update method will send the changed properties
-        QA_LOG("[QA:setProperty] Property value has been set! \n");
+        TA_LOG("[TA:setProperty] Property value has been set! \n");
     }
 };
