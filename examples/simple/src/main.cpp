@@ -10,7 +10,10 @@ const int ledPin = LED_BUILTIN;
 TinyAdapter *adapter;
 
 void onOffChanged(ThingPropertyValue newValue);
-ThingDevice led("tiny-thing-02");
+
+// Define the types of the thing. This will be `@type` in the thing description.
+const char *ledTypes[] = {"OnOffSwitch", "LightBrightnesControl", nullptr};
+ThingDevice led("tiny-thing-02", ledTypes);
 ThingProperty ledOn("on", BOOLEAN, "OnOffProperty", onOffChanged);
 ThingProperty ledBrightness("brightness", NUMBER, "BrightnessProperty", nullptr);
 
