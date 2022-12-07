@@ -8,15 +8,16 @@ class ThingDevice
 {
 public:
     String id;
+    const char **type;
     ThingDevice *next = nullptr;
     ThingProperty *firstProperty = nullptr;
 
-    ThingDevice(const char *_id)
-        : id(_id) {}
+    ThingDevice(const char *_id, const char **_type)
+        : id(_id), type(_type) {}
 
     /*
      * @brief Find a property with the given id
-     * @param TinyProperty *property
+     * @param  {String} id : property id
      * @return TinyProperty *property
      */
     ThingProperty *findProperty(const char *id)
@@ -33,7 +34,7 @@ public:
 
     /*
      * @brief Add a property to the thing
-     * @param TinyProperty *property
+     * @param {TinyProperty} property
      */
     void addProperty(ThingProperty *property)
     {
@@ -41,10 +42,10 @@ public:
         firstProperty = property;
     }
 
-     /*
+    /*
      * @brief Set a property value
-     * @param {String} id
-     * @param {JsonVariant} newValue
+     * @param {String} id : property id
+     * @param {JsonVariant} newValue : new value of the property (boolean, number, integer, string)
      */
     void setProperty(const char *name, const JsonVariant &newValue)
     {
@@ -94,13 +95,22 @@ public:
 
     /*
      * @brief Serialize the thing to JSON
-     * @param {JsonObject} descr
-     * @param {String} tunnelUrl
+     * @param {JsonObject} descr : JSON object to serialize to
      */
     void serialize(JsonObject descr)
     {
         descr["id"] = this->id;
         ThingProperty *property = this->firstProperty;
+        descr["@context"] = "https://webthings.io/schemas";
+
+        JsonArray typeJson = descr.createNestedArray("@type");
+        const char **type = this->type;
+        while ((*type) != nullptr)
+        {
+            typeJson.add(*type);
+            type++;
+        }
+
         if (property != nullptr)
         {
             JsonObject properties = descr.createNestedObject("properties");
