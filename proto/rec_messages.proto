@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+
+message SetProperty {
+    string type = 1;
+    string thing_id = 2;
+    map<string, string> data = 3;
+}
+
+
+// This is message received from the gateway, and can be used for getProperty, getThingDescription etc.
+message ScaffoldMessage {
+    string type = 1;
+}
+

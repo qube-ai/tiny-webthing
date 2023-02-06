@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package thing;
+
+enum PropertyType {
+  STRING = 0;
+  NUMBER = 1;
+  BOOLEAN = 2;
+  FLOAT = 3;
+}
+
+message Property {
+  string id = 1;
+  PropertyType type = 2;
+  string value = 3;
+}
+
+message Thing {
+  string thing_id = 2;
+  string type = 1;
+  repeated Property properties = 3;
+}

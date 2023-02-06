@@ -16,7 +16,7 @@
   "frameworks": "arduino",
   "platforms": "espressif8266,espressif32,atmelavr,atmelsam",
   "dependencies": {
-    "bblanchon/ArduinoJson": "^6.17.0",
+    "nanopb/nanopb": "^0.4.7",
     "Links2004/WebSockets": "^2.3.6"
   }
 }

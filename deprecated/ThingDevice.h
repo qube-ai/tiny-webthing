@@ -18,7 +18,6 @@ public:
     /*
      * @brief Find a property with the given id
      * @param  {String} id : property id
-     * @return TinyProperty *property
      */
     ThingProperty *findProperty(const char *id)
     {

@@ -85,6 +85,7 @@ public:
      * @example
      * {
      *    "id": "temperature",
+     * 
      *    "type": "number",
      *    "unit": "degree celsius",
      *    "href": "/things/lamp/properties/temperature"

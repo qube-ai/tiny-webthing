@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ArduinoJson.h>
 #include "Thing.h"
 #include <WebSocketsClient.h>
 
@@ -9,20 +8,6 @@
 #define TA_LOG(...) (void)0
 #else
 #define TA_LOG(...) Serial.printf(__VA_ARGS__)
-#endif
-
-#define ARDUINOJSON_USE_LONG_LONG 1
-
-#ifndef LARGE_JSON_DOCUMENT_SIZE
-#define LARGE_JSON_DOCUMENT_SIZE 2048
-#endif
-
-#ifndef SMALL_JSON_DOCUMENT_SIZE
-#define SMALL_JSON_DOCUMENT_SIZE 512
-#endif
-
-#ifndef TINY_JSON_DOCUMENT_SIZE
-#define TINY_JSON_DOCUMENT_SIZE 256
 #endif
 
 
@@ -115,20 +100,11 @@ public:
 
         case WStype_CONNECTED:
             TA_LOG("[TA:webSocketEvent] Connected to tunnel server!\n");
-            webSocket.sendTXT("{\"messageType\":\"StartWs\"}");
             break;
 
         case WStype_TEXT:
         {
             TA_LOG("[TA:payloadHandler] New message received!\n");
-            char msgch[length];
-            for (unsigned int i = 0; i < length; i++)
-            {
-                msgch[i] = ((char)payload[i]);
-            }
-            msgch[length] = '\0';
-            String msg = msgch;
-            messageHandler(msg);
             break;
         }
 

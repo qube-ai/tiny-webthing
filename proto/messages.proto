@@ -1,0 +1,26 @@
+
+
+syntax = "proto3";
+
+import "proto/thing.proto";
+
+message InitWebsocket {}
+
+// Whenever a property is updated, this message is sent to the server
+message PropertyUpdate {
+  string type = 1;
+  string thing_id = 2;
+  map<string, string> properties = 3;
+}
+
+// This message is sent to the server to update thing description
+message ThingDescription {
+  string type = 1;
+  Thing thing = 2;
+}
+
+// This message is sent to the server whenever wants to get properties value
+message GetProperties {
+  string type = 1;
+  repeated Property properites = 2;
+}

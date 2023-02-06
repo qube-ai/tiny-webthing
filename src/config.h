@@ -1,0 +1,3 @@
+#ifndef NUMBER_OF_PROPERTIES
+#define NUMBER_OF_PROPERTIES 2
+#endif
